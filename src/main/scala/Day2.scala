@@ -7,67 +7,75 @@ object Day2 {
     Using.resource(Source.fromFile("src/main/data/day2.txt")) {
       source =>
         val lines = source.getLines().toList
-        println(firstPart(lines))
-        println(secondPart(lines))
+        println(getNumberOfValidPasswords(lines, isPasswordValidFirstPart, 0))
+        println(getNumberOfValidPasswords(lines, isPasswordValidSecondPart, 1))
     }
   }
 
-  def firstPart(lines: List[String]) = {
-    var validPasswords = 0
-    lines.foreach {
-      line =>
-        if (isPasswordValidFirstPart(line)) {
-          validPasswords += 1
-        }
-    }
-    validPasswords
+  def getNumberOfValidPasswords(lines: List[String], isPasswordValid: (String, Int) => Boolean, indexZero: Int): Int = {
+    getNumberOfValidPasswords(lines, isPasswordValid, 0, indexZero)
   }
 
-  def secondPart(lines: List[String]) = {
-    var validPasswords = 0
-    lines.foreach {
-      line =>
-        if (isPasswordValidSecondPart(line)) {
-          validPasswords += 1
-        }
+  def getNumberOfValidPasswords(lines: List[String], isPasswordValid: (String, Int) => Boolean, i: Int, indexZero: Int): Int = {
+    if (i < lines.length) {
+      val result =
+        if (isPasswordValid(lines(i), indexZero)) 1
+        else 0
+      result + getNumberOfValidPasswords(lines, isPasswordValid, i + 1, indexZero)
     }
-    validPasswords
+    else 0
   }
 
-  def isPasswordValidFirstPart(line: String): Boolean = {
+  def isPasswordValidFirstPart(line: String, indexZero: Int): Boolean = {
     val fields = line.split(" ")
-    val min = fields(0).split("-").head.toInt
-    val max = fields(0).split("-").last.toInt
-    val letter = fields(1).replace(":", "").trim.charAt(0)
-    val password = fields(2)
-    var occurrences = 0
-    for (c <- password) {
-      if (c == letter) {
-        occurrences += 1
-      }
-    }
-    if (occurrences >= min && occurrences <= max) {
-      return true
-    }
-    false
+    val occurrences = findAllLetterOccurrences(extractPassword(fields), extractExpectedLetter(fields), 0)
+
+    areAllOccurrencesInRange(extractMinIndex(fields, indexZero), extractMaxIndex(fields, indexZero), occurrences)
   }
 
-  def isPasswordValidSecondPart(line: String): Boolean = {
+  private def areAllOccurrencesInRange(min: Int, max: Int, occurrences: Int): Boolean = {
+    if (occurrences >= min && occurrences <= max) true
+    else false
+  }
+
+  def isPasswordValidSecondPart(line: String, indexZero: Int): Boolean = {
     val fields = line.split(" ")
-    val minPosition = fields(0).split("-").head.toInt - 1
-    val maxPosition = fields(0).split("-").last.toInt - 1
-    val letter = fields(1).replace(":", "").trim.charAt(0)
-    val password = fields(2)
-    var occurrences = 0
-    if (password.charAt(minPosition) == letter) {
-      occurrences += 1
+
+    isLetterOnlyOnOnePosition(extractPassword(fields), extractExpectedLetter(fields), extractMinIndex(fields,
+      indexZero), extractMaxIndex(fields, indexZero))
+  }
+
+  def findAllLetterOccurrences(password: String, letter: Char, index: Int): Int = {
+    if (index < password.length) {
+      val current =
+        if (isLetterOnPosition(password, letter, index)) 1
+        else 0
+      current + findAllLetterOccurrences(password, letter, index + 1)
     }
-    if (password.charAt(maxPosition) == letter) {
-      occurrences += 1
-    }
-    if (occurrences == 1) {
-      return true
-    }
-    false
+    else 0
+  }
+
+  private def extractMinIndex(fields: Array[String], indexZero: Int) = {
+    fields(0).split("-").head.toInt - indexZero
+  }
+
+  private def extractMaxIndex(fields: Array[String], indexZero: Int) = {
+    fields(0).split("-").last.toInt - indexZero
+  }
+
+  private def extractExpectedLetter(fields: Array[String]) = {
+    fields(1).replace(":", "").trim.charAt(0)
+  }
+
+  private def extractPassword(fields: Array[String]) = {
+    fields(2)
+  }
+
+  def isLetterOnlyOnOnePosition(password: String, letter: Char, minPosition: Int, maxPosition: Int): Boolean = {
+    isLetterOnPosition(password, letter, minPosition) ^ isLetterOnPosition(password, letter, maxPosition)
+  }
+
+  def isLetterOnPosition(password: String, letter: Char, position: Int): Boolean = {
+    password.charAt(position) == letter
   }
 }

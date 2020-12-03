@@ -13,36 +13,51 @@ object Day1 {
   }
 
   def firstPart(values: List[Int]): Int = {
-    var result: Int = 0
-    for (i <- values.indices) {
-      var j = i
-      while (j < values.length) {
-        if (values(i) + values(j) == 2020) {
-          result = values(i) * values(j)
-        }
-        j += 1
-      }
+    get2NumbersProduct(values, 0, 0)
+  }
+
+  def get2NumbersProduct(values: List[Int], result: Int, i: Int): Int = {
+    if (result == 0 && i < values.length) {
+      get2NumbersProduct(values, get2NumbersProduct(values, result, i, i + 1), i + 1)
     }
-    result
+    else result
+  }
+
+  def get2NumbersProduct(values: List[Int], result: Int, i: Int, j: Int): Int = {
+    if (result == 0 && j < values.length) {
+      val currentResult =
+        if (values(i) + values(j) == 2020) values(i) * values(j)
+        else 0
+      get2NumbersProduct(values, currentResult, i, j + 1)
+    }
+    else result
   }
 
   def secondPart(values: List[Int]): Int = {
-    var result: Int = 0
-    for (i <- values.indices) {
-      var j = i
-      while (j < values.length) {
-        if (values(i) + values(j) <= 2020) {
-          var k = j
-          while (k < values.length) {
-            if (values(i) + values(j) + values(k) == 2020) {
-              result = values(i) * values(j) * values(k)
-            }
-            k += 1
-          }
-        }
-        j += 1
-      }
+    get3NumbersProduct(values, 0, 0)
+  }
+
+  def get3NumbersProduct(values: List[Int], result: Int, i: Int): Int = {
+    if (result == 0 && i < values.length) {
+      get3NumbersProduct(values, get3NumbersProduct(values, result, i, i + 1), i + 1)
     }
-    result
+    else result
+  }
+
+  def get3NumbersProduct(values: List[Int], result: Int, i: Int, j: Int): Int = {
+    if (result == 0 && j < values.length) {
+      get3NumbersProduct(values, get3NumbersProduct(values, result, i, j, j + 1), i, j + 1)
+    }
+    else result
+  }
+
+  def get3NumbersProduct(values: List[Int], result: Int, i: Int, j: Int, k: Int): Int = {
+    if (result == 0 && k < values.length) {
+      val currentResult =
+        if (values(i) + values(j) + values(k) == 2020) values(i) * values(j) * values(k)
+        else 0
+      get3NumbersProduct(values, currentResult, i, j, k + 1)
+    }
+    else result
   }
 }
